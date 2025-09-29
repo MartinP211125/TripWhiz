@@ -6,6 +6,10 @@ TripWhiz is a travel offer application that fetches accommodation and transporta
 
 Before you run the application, you need to set up your API tokens.
 
+### Publish the Batabase
+
+Runn the update-database command to apply all the migrations.
+
 ### 🔐 Required API Keys
 
 This application requires the following API keys:
