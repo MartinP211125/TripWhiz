@@ -1,0 +1,144 @@
+<div class="main-page-container">
+   <!-- Header --> 
+    <header class="main-header"> 
+      <nav class="navbar navbar-expand-lg navbar-dark"> 
+        <div class="container-fluid"> 
+          <a class="navbar-brand" href="#"> 
+            <i class="fas fa-map-marked-alt me-2"></i> 
+            <span class="fw-bold">TripWhiz</span> 
+          </a> 
+          <!-- Search Bar --> 
+           <div class="search-container mx-auto"> 
+            <div class="search-wrapper"> 
+              <i class="fas fa-search search-icon"></i> 
+              <input type="text" class="form-control search-input" placeholder="Search offers..." [(ngModel)]="searchQuery" (input)="onSearchChange()"> 
+              <button *ngIf="searchQuery" class="btn btn-sm btn-outline-light clear-search" (click)="clearSearch()" type="button"> 
+                <i class="fas fa-times"></i> 
+              </button> 
+            </div> 
+          </div> 
+          <div class="navbar-nav"> 
+            <button class="btn btn-outline-light me-2" (click)="onViewBookings()" type="button"> 
+              <i class="fas fa-calendar-check me-1"></i> 
+              <span class="d-none d-md-inline">My Bookings</span> 
+            </button> 
+            <button class="btn btn-outline-light" (click)="onLogout()" type="button"> 
+              <i class="fas fa-sign-out-alt me-1"></i> <span class="d-none d-md-inline">Logout</span> 
+            </button> 
+          </div> 
+        </div> 
+      </nav> 
+    </header> 
+    <!-- Main Content --> 
+     <main class="main-content"> 
+      <div class="container-fluid"> 
+        <!-- Hero Section --> 
+         <div class="hero-section text-center mb-5"> 
+          <h1 class="hero-title">Discover Amazing Travel Offers</h1> 
+          <p class="hero-subtitle" *ngIf="!hasSearchResults()">Find your perfect getaway from our curated selection</p> 
+          <p class="hero-subtitle" *ngIf="hasSearchResults()">Search results for "{{ searchQuery }}"</p> 
+        </div> 
+        <!-- Loading State --> 
+        <div *ngIf="isLoading" class="loading-section text-center"> 
+          <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;"> 
+            <span class="visually-hidden">Loading...</span> 
+          </div> 
+          <p class="text-muted">Loading amazing offers for you...</p> 
+        </div> 
+        <!-- Error State --> 
+         <div *ngIf="errorMessage && !isLoading" class="alert alert-danger" role="alert"> 
+          <i class="fas fa-exclamation-triangle me-2"></i> {{ errorMessage }} 
+          <button class="btn btn-link p-0 ms-2" (click)="loadOffers()" type="button">Try again</button> 
+        </div> 
+        <!-- No Search Results --> 
+         <div *ngIf="!isLoading && hasSearchResults() && !hasOffers()" class="no-offers-section text-center py-5"> 
+          <i class="fas fa-search fa-4x text-muted mb-4"></i> 
+          <h3 class="text-muted mb-3">No offers found</h3> 
+          <p class="text-muted mb-4">Try searching with different keywords or browse all offers</p> 
+          <button class="btn btn-primary btn-lg" (click)="clearSearch()" type="button"> <i class="fas fa-times me-2"></i>Clear Search </button> 
+        </div>
+<!-- Offers Grid -->
+<div *ngIf="!isLoading && hasOffers()" class="offers-grid">
+
+  <ng-container *ngFor="let category of categoryList">
+    <div *ngIf="getCategoryOffers(category).length > 0" class="offers-row mb-5">
+
+      <!-- Row Header -->
+      <div class="row-header mb-4 d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center">
+          <div class="section-icon me-3" [ngClass]="{
+            'recommended-icon': category === 'recommended',
+            'trending-icon': category === 'trending',
+            'standard-icon': category === 'standard'
+          }">
+            <i class="fas" [ngClass]="{
+              'fa-star': category === 'recommended',
+              'fa-fire': category === 'trending',
+              'fa-compass': category === 'standard'
+            }"></i>
+          </div>
+          <div>
+            <h2 class="section-title mb-1">
+              {{ category === 'recommended' ? 'Recommended for You' :
+                 category === 'trending' ? 'Trending Now' : 'Explore More' }}
+            </h2>
+            <p class="section-subtitle mb-0">
+              {{ category === 'recommended' ? 'Personalized picks based on your preferences' :
+                 category === 'trending' ? 'Popular destinations everyone\'s talking about' :
+                 'Discover other amazing travel opportunities' }}
+            </p>
+          </div>
+        </div>
+        <span class="offers-count">{{ getCategoryOffers(category).length }} offers</span>
+      </div>
+
+      <!-- Offers Cards with Navigation -->
+      <div class="d-flex align-items-center justify-content-center">
+
+        <!-- Left Arrow -->
+        <button class="btn btn-outline-secondary me-3"
+                [disabled]="!canNavigateLeft(category)"
+                (click)="navigateLeft(category)">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+
+        <!-- Cards Container -->
+        <div class="d-flex justify-content-center flex-wrap gap-3">
+          <div *ngFor="let offer of getVisibleOffers(category)"
+               class="offer-card-wrapper"
+               style="width: 280px; min-height: 100%; flex-shrink: 0;">
+            <div class="offer-card h-100" [ngClass]="category + '-card'" (click)="onOfferClick(offer)">
+              <div class="offer-badge" [ngClass]="category + '-badge'" *ngIf="category !== 'standard'">
+                <i class="fas me-1" [ngClass]="{
+                  'fa-star': category === 'recommended',
+                  'fa-fire': category === 'trending'
+                }"></i>{{ category | titlecase }}
+              </div>
+              <div class="offer-image">
+                <img [src]="offer.imageUrl" [alt]="offer.title" class="img-fluid">
+                <div class="offer-price">{{ formatPrice(offer.price) }}</div>
+              </div>
+              <div class="offer-content">
+                <h5 class="offer-title">{{ offer.title }}</h5>
+                <p class="offer-description">{{ offer.description }}</p>
+                <div class="offer-dates">
+                  <i class="fas fa-calendar-alt me-2"></i>
+                  <span>{{ formatDate(offer.fromDate) }}</span>
+                  <span *ngIf="offer.toDate"> - {{ formatDate(offer.toDate) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Arrow -->
+        <button class="btn btn-outline-secondary ms-3"
+                [disabled]="!canNavigateRight(category)"
+                (click)="navigateRight(category)">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+
+      </div>
+    </div>
+  </ng-container>
+</div>

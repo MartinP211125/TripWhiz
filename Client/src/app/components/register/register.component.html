@@ -1,0 +1,198 @@
+<div class="register-container">
+  <div class="container-fluid vh-100">
+    <div class="row h-100">
+      <div class="col-lg-6 col-12">
+        <div class="register-form-section d-flex align-items-center justify-content-center h-100">
+          <div class="register-form-container">
+            <div class="text-center mb-4">
+              <div class="d-lg-none mb-4">
+                <i class="fas fa-map-marked-alt fa-3x text-primary mb-2"></i>
+                <h2 class="fw-bold text-dark">TripWhiz</h2>
+              </div>
+              <h3 class="fw-bold text-dark mb-2">Create Account</h3>
+              <p class="text-muted">Join us and start your journey</p>
+            </div>
+
+            <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+              <i class="fas fa-check-circle me-2"></i>
+              {{ successMessage }}
+            </div>
+
+            <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+              <i class="fas fa-exclamation-triangle me-2"></i>
+              {{ errorMessage }}
+              <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
+            </div>
+
+            <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" novalidate>
+              <div class="form-floating mb-3">
+                <input
+                  type="text"
+                  class="form-control"
+                  [class.is-invalid]="userName?.invalid && userName?.touched"
+                  [class.is-valid]="userName?.valid && userName?.touched"
+                  id="userName"
+                  formControlName="userName"
+                  placeholder="Username"
+                  autocomplete="username">
+                <label for="userName">
+                  <i class="fas fa-user me-2"></i>Username
+                </label>
+                <div *ngIf="userName?.invalid && userName?.touched" class="invalid-feedback">
+                  <div *ngIf="userName?.errors?.['required']">Username is required</div>
+                  <div *ngIf="userName?.errors?.['minlength']">Username must be at least 3 characters</div>
+                  <div *ngIf="userName?.errors?.['maxlength']">Username must not exceed 50 characters</div>
+                </div>
+              </div>
+
+              <div class="form-floating mb-3">
+                <input
+                  type="email"
+                  class="form-control"
+                  [class.is-invalid]="email?.invalid && email?.touched"
+                  [class.is-valid]="email?.valid && email?.touched"
+                  id="email"
+                  formControlName="email"
+                  placeholder="name@example.com"
+                  autocomplete="email">
+                <label for="email">
+                  <i class="fas fa-envelope me-2"></i>Email Address
+                </label>
+                <div *ngIf="email?.invalid && email?.touched" class="invalid-feedback">
+                  <div *ngIf="email?.errors?.['required']">Email is required</div>
+                  <div *ngIf="email?.errors?.['email']">Please enter a valid email</div>
+                </div>
+              </div>
+
+              <div class="form-floating mb-3">
+                <input
+                  [type]="showPassword ? 'text' : 'password'"
+                  class="form-control"
+                  [class.is-invalid]="password?.invalid && password?.touched"
+                  [class.is-valid]="password?.valid && password?.touched"
+                  id="password"
+                  formControlName="password"
+                  placeholder="Password"
+                  autocomplete="new-password">
+                <label for="password">
+                  <i class="fas fa-lock me-2"></i>Password
+                </label>
+                <button
+                  type="button"
+                  class="btn btn-link password-toggle"
+                  (click)="togglePasswordVisibility()">
+                  <i [class]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                </button>
+                
+                <div *ngIf="password?.value && password?.touched" class="password-strength mt-1">
+                  <div class="strength-meter">
+                    <div class="strength-bar" [class]="'strength-' + getPasswordStrength()"></div>
+                  </div>
+                  <small class="strength-text" [class]="'text-' + getPasswordStrength()">
+                    Password strength: {{ getPasswordStrength() | titlecase }}
+                  </small>
+                </div>
+
+                <div *ngIf="password?.invalid && password?.touched" class="invalid-feedback">
+                  <div *ngIf="password?.errors?.['required']">Password is required</div>
+                  <div *ngIf="password?.errors?.['minlength']">Password must be at least 6 characters</div>
+                  <div *ngIf="password?.errors?.['passwordStrength']" class="password-requirements">
+                    <small>Password must contain:</small>
+                    <ul class="mb-0">
+                      <li [class.text-success]="password?.errors?.['passwordStrength']?.hasLower">One lowercase letter</li>
+                      <li [class.text-success]="password?.errors?.['passwordStrength']?.hasUpper">One uppercase letter</li>
+                      <li [class.text-success]="password?.errors?.['passwordStrength']?.hasNumber">One number</li>
+                      <li [class.text-success]="password?.errors?.['passwordStrength']?.hasSpecial">One special character</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-floating mb-3">
+                <input
+                  [type]="showConfirmPassword ? 'text' : 'password'"
+                  class="form-control"
+                  [class.is-invalid]="(confirmPassword?.invalid && confirmPassword?.touched) || registerForm.errors?.['passwordMismatch']"
+                  [class.is-valid]="confirmPassword?.valid && confirmPassword?.touched && !registerForm.errors?.['passwordMismatch']"
+                  id="confirmPassword"
+                  formControlName="confirmPassword"
+                  placeholder="Confirm Password"
+                  autocomplete="new-password">
+                <label for="confirmPassword">
+                  <i class="fas fa-lock me-2"></i>Confirm Password
+                </label>
+                <button
+                  type="button"
+                  class="btn btn-link password-toggle"
+                  (click)="toggleConfirmPasswordVisibility()">
+                  <i [class]="showConfirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                </button>
+                <div *ngIf="(confirmPassword?.invalid && confirmPassword?.touched) || registerForm.errors?.['passwordMismatch']" class="invalid-feedback">
+                  <div *ngIf="confirmPassword?.errors?.['required']">Please confirm your password</div>
+                  <div *ngIf="registerForm.errors?.['passwordMismatch']">Passwords do not match</div>
+                </div>
+              </div>
+
+              <div class="form-check mb-4">
+                <input class="form-check-input" type="checkbox" id="termsCheck" required>
+                <label class="form-check-label text-muted" for="termsCheck">
+                  I agree to the <a href="#" class="text-decoration-none">Terms of Service</a> 
+                  and <a href="#" class="text-decoration-none">Privacy Policy</a>
+                </label>
+              </div>
+
+              <button
+                type="submit"
+                class="btn btn-primary btn-lg w-100 mb-3"
+                [disabled]="isLoading || registerForm.invalid">
+                <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status"></span>
+                <i *ngIf="!isLoading" class="fas fa-user-plus me-2"></i>
+                {{ isLoading ? 'Creating Account...' : 'Create Account' }}
+              </button>
+
+              <div class="text-center">
+                <p class="mb-0 text-muted">
+                  Already have an account?
+                  <a (click)="navigateToLogin()" class="text-decoration-none fw-bold">Sign in here</a>
+                </p>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6 d-none d-lg-flex register-image-section">
+        <div class="d-flex flex-column justify-content-center align-items-center text-white p-5">
+          <div class="register-brand mb-4">
+            <i class="fas fa-route fa-4x mb-3"></i>
+            <h2 class="fw-bold">Start Your Adventure</h2>
+            <p class="lead">Discover the world with TripApp</p>
+          </div>
+          <div class="register-features">
+            <div class="feature-item mb-4">
+              <div class="feature-icon mb-2">
+                <i class="fas fa-globe-americas fa-2x"></i>
+              </div>
+              <h5>Explore Destinations</h5>
+              <p class="mb-0">Discover amazing places around the world</p>
+            </div>
+            <div class="feature-item mb-4">
+              <div class="feature-icon mb-2">
+                <i class="fas fa-users fa-2x"></i>
+              </div>
+              <h5>Connect with Travelers</h5>
+              <p class="mb-0">Meet like-minded adventurers and share experiences</p>
+            </div>
+            <div class="feature-item">
+              <div class="feature-icon mb-2">
+                <i class="fas fa-camera fa-2x"></i>
+              </div>
+              <h5>Capture Memories</h5>
+              <p class="mb-0">Document and share your travel experiences</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
